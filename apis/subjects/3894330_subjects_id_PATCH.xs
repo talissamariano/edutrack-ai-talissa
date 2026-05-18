@@ -1,5 +1,5 @@
 // Updates a subject
-query "subjects/{id}" verb=PUT {
+query "subjects/{id}" verb=PATCH {
   api_group = "subjects"
   auth = "user"
 
