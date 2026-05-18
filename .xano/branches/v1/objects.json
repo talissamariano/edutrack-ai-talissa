@@ -164,7 +164,7 @@
   {
     "id": 310164,
     "path": "functions/subjects/310154_create_subject.xs",
-    "status": "unchanged",
+    "status": "changed",
     "type": "function",
     "staged": false,
     "sha256": "ebda35feb0d3a974c5affb177a6784e47a04d907e8317f3177cd909f4c890efe",
@@ -173,7 +173,7 @@
   {
     "id": 310185,
     "path": "functions/subjects/310155_list_subjects_by_user.xs",
-    "status": "unchanged",
+    "status": "changed",
     "type": "function",
     "staged": false,
     "sha256": "bd52a70f2fe0e2b56a929c7deee70941000ec3869da2f1cf93b145ac3791db79",
@@ -182,7 +182,7 @@
   {
     "id": 310186,
     "path": "functions/subjects/310156_update_subject.xs",
-    "status": "unchanged",
+    "status": "changed",
     "type": "function",
     "staged": false,
     "sha256": "1080922a601993c0b4527cf085aa7344cad8fe54dc4c5e71a2e3af9ba00adda6",
@@ -191,7 +191,7 @@
   {
     "id": 310187,
     "path": "functions/subjects/310157_delete_subject.xs",
-    "status": "unchanged",
+    "status": "changed",
     "type": "function",
     "staged": false,
     "sha256": "afa24630383862e505c9e99c1fc8a52e2e267de289ef2ac09809d289c82662a6",
@@ -200,7 +200,7 @@
   {
     "id": 310188,
     "path": "functions/subjects/310158_archive_subject.xs",
-    "status": "unchanged",
+    "status": "changed",
     "type": "function",
     "staged": false,
     "sha256": "b2c2d0b6c57f6f52a95a43059734700fb243a024a4cf7bfed02cc813d2550db8",
@@ -209,7 +209,7 @@
   {
     "id": 310189,
     "path": "functions/subjects/310159_unarchive_subject.xs",
-    "status": "unchanged",
+    "status": "changed",
     "type": "function",
     "staged": false,
     "sha256": "9d6dda69ebd58f73d1a2fb51f68783ad58d2198f321f9d1f00f9031cd1d07cd7",
@@ -218,7 +218,7 @@
   {
     "id": 837167,
     "path": "tables/837132_subjects.xs",
-    "status": "unchanged",
+    "status": "changed",
     "type": "table",
     "staged": false,
     "sha256": "d7a45c5cece89a6bba806466f095875fb8648f821e5e3790e992855ea6e8f4e9",
@@ -227,7 +227,7 @@
   {
     "id": 412802,
     "path": "apis/subjects/api_group.xs",
-    "status": "unchanged",
+    "status": "changed",
     "type": "api_group",
     "staged": false,
     "sha256": "b5389a80629531bc3f8a814bcf1969835c949232793201dd64eb5dd542421c2b",
@@ -236,7 +236,7 @@
   {
     "id": 3894469,
     "path": "apis/subjects/3894328_subjects_POST.xs",
-    "status": "unchanged",
+    "status": "changed",
     "type": "api_endpoint",
     "staged": false,
     "sha256": "5b33d0426b0c4174ec7c1aae54130593081095d77c4408e2f10a36658b994085",
@@ -245,7 +245,7 @@
   {
     "id": 3894470,
     "path": "apis/subjects/3894329_subjects_GET.xs",
-    "status": "unchanged",
+    "status": "changed",
     "type": "api_endpoint",
     "staged": false,
     "sha256": "596cfb19324ba8358734fbfa7adf597d0afee24a78cf66b5269b68511901c0d5",
@@ -254,7 +254,7 @@
   {
     "id": 3894471,
     "path": "apis/subjects/3894330_subjects_id_PUT.xs",
-    "status": "unchanged",
+    "status": "changed",
     "type": "api_endpoint",
     "staged": false,
     "sha256": "1be2682ac8506f24b0db4755dbe276266170b585b0e7f439bfdba68b70235948",
@@ -263,7 +263,7 @@
   {
     "id": 3894472,
     "path": "apis/subjects/3894331_subjects_id_DELETE.xs",
-    "status": "unchanged",
+    "status": "changed",
     "type": "api_endpoint",
     "staged": false,
     "sha256": "bde24acbf1c09dde059018f0061978eb38a2cb1e6797d3b14268aec53c106dc8",
@@ -272,7 +272,7 @@
   {
     "id": 3894473,
     "path": "apis/subjects/3894332_subjects_id_archive_POST.xs",
-    "status": "unchanged",
+    "status": "changed",
     "type": "api_endpoint",
     "staged": false,
     "sha256": "bab5d6d5d5c5c2306d92901cf3fa760b58644c07149958bbdb98422fd25b250f",
@@ -281,7 +281,7 @@
   {
     "id": 3894474,
     "path": "apis/subjects/3894333_subjects_id_unarchive_POST.xs",
-    "status": "unchanged",
+    "status": "changed",
     "type": "api_endpoint",
     "staged": false,
     "sha256": "d54aad4c1028a88c31f3ea3e589497a6e3d7dcd52d74510c80515e0651976adb",
