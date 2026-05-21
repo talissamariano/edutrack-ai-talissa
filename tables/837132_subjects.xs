@@ -8,7 +8,10 @@ table subjects {
     timestamp updated_at?=now
     timestamp archived_at?
     text name filters=trim
-    text description
+    text description?
+    text professor? filters=trim
+    int workload_hours?
+    int semester?
     int user_id {
       table = "user"
     }

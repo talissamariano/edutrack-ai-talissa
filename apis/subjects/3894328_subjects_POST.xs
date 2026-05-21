@@ -7,14 +7,29 @@ query subjects verb=POST {
     // The name of the subject.
     text name
   
-    // A description of the subject.
-    text description
+    // The professor of the subject.
+    text professor
+  
+    // A description of the subject (optional).
+    text description?
+  
+    // Workload in hours (optional).
+    int workload_hours?
+  
+    // Course semester / period (optional).
+    int semester?
   }
 
   stack {
     // Run the function to create the subject
     function.run "subjects/create_subject" {
-      input = {name: $input.name, description: $input.description}
+      input = {
+        name          : $input.name
+        professor     : $input.professor
+        description   : $input.description
+        workload_hours: $input.workload_hours
+        semester      : $input.semester
+      }
     } as $new_subject
   }
 
