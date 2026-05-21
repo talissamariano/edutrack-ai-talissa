@@ -8,11 +8,12 @@ with tab_novo:
     with st.form("form_disciplina"):
         nome = st.text_input("Nome da Disciplina")
         professor = st.text_input("Nome do Professor")
-        dia_semana = st.selectbox("Dia da Aula", ["Seg", "Ter", "Qua", "Qui",
-        "Sex"])
-    submitted = st.form_submit_button("Salvar")
+        dia_semana = st.selectbox(
+            "Dia da Aula", ["Seg", "Ter", "Qua", "Qui", "Sex"]
+        )
+        submitted = st.form_submit_button("Salvar")
     if submitted:
-        st.success(f"Diciplina {nome} cadastrada! (Simulação)")
+        st.success(f"Disciplina {nome} cadastrada! (Simulação)")
 with tab_lista:
     st.info("A conexão com o Xano virá na Tarefa 13.")
     # Mockup de uma tabela

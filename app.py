@@ -1,28 +1,44 @@
+"""Roteador principal do EduTrack AI.
+
+Usa st.navigation (Streamlit 1.36+) para alternar entre dois conjuntos de
+paginas com base no estado de autenticacao:
+
+- Nao autenticado: apenas a pagina de login (`login.py`).
+- Autenticado: home + paginas existentes (Disciplinas, Tarefas, Perfil).
+
+Quando st.navigation eh usado, a auto-descoberta da pasta `pages/` eh
+desativada, entao paginas internas so ficam acessiveis se registradas aqui.
+"""
+
 import streamlit as st
 
-# Configuração da Página (Título na aba do navegador)
+from lib import xano_client as xano
+
 st.set_page_config(page_title="EduTrack AI", page_icon="🎓")
 
-# Título Principal
-st.title("🎓 EduTrack AI")
+# Restaura a sessao a partir do cookie (persistencia entre reloads).
+xano.restore_session()
 
-# Sidebar (Menu Lateral)
-st.sidebar.header("Menu")
-menu_option = st.sidebar.radio("Navegar", ["Dashboard", "Disciplinas", "Tarefas"])
+# Aviso de expiracao vindo de outras paginas.
+if st.session_state.pop("_session_expired_notice", False):
+    st.warning("Sua sessao expirou. Faca login novamente.")
 
-# Conteúdo Dinâmico
-if menu_option == "Dashboard":
-    st.write("Bem-vindo ao seu assistente acadêmico!")
-    st.info("Conecte ao Xano para ver seus dados reais.")
-    # Exemplo de Métrica Visual
-    col1, col2 = st.columns(2)
-    col1.metric("Disciplinas Ativas", "0")
-    col2.metric("Tarefas Pendentes", "0")
-    
-elif menu_option == "Disciplinas":
-    st.subheader("Minhas Disciplinas")
-    st.write("Aqui listaremos as matérias cadastradas no backend.")
-    
-elif menu_option == "Tarefas":
-    st.subheader("Gerenciamento de Tarefas")
-    st.checkbox("Exemplo: Estudar Streamlit")
+if xano.is_authenticated():
+    user = st.session_state.get("user") or {}
+    with st.sidebar:
+        st.write(f"Usuario: {user.get('id', '?')}")
+        if st.button("Sair", use_container_width=True):
+            xano.clear_session()
+            st.rerun()
+
+    pages = [
+        st.Page("home.py", title="Home", icon="🏠", default=True),
+        st.Page("pages/1_📚_Disciplinas.py", title="Disciplinas", icon="📚"),
+        st.Page("pages/2_📝_Tarefas.py", title="Tarefas", icon="📝"),
+        st.Page("pages/3_👤_Perfil.py", title="Perfil", icon="👤"),
+    ]
+else:
+    pages = [st.Page("login.py", title="Entrar", icon="🔐", default=True)]
+
+pg = st.navigation(pages)
+pg.run()
