@@ -7,8 +7,17 @@ function "subjects/update_subject" {
     // The new name of the subject.
     text name
   
-    // The new description of the subject.
-    text description
+    // The new description of the subject (optional).
+    text description?
+  
+    // The new professor of the subject.
+    text professor
+  
+    // New workload in hours (optional).
+    int workload_hours?
+  
+    // New course semester / period (optional).
+    int semester?
   }
 
   stack {
@@ -41,9 +50,12 @@ function "subjects/update_subject" {
       field_name = "id"
       field_value = $input.id
       data = {
-        updated_at : "now"
-        name       : $input.name
-        description: $input.description
+        updated_at    : "now"
+        name          : $input.name
+        description   : $input.description
+        professor     : $input.professor
+        workload_hours: $input.workload_hours
+        semester      : $input.semester
       }
     } as $updated_subject
   }
