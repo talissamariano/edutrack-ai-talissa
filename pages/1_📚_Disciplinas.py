@@ -7,9 +7,17 @@ st.number_input, st.text_area, st.checkbox, st.button, st.container,
 st.dialog, st.error, st.success.
 """
 
+import datetime as _dt
+
 import streamlit as st
 
 from lib import xano_client as xano
+from lib.dashboard_utils import (
+    index_tasks_by_subject,
+    is_overdue,
+    is_upcoming,
+    subject_progress,
+)
 
 st.title("📚 Gestão de Disciplinas")
 
@@ -65,6 +73,21 @@ if buscar:
 filtro_nome = st.session_state.get("disc_busca_nome", "")
 filtro_atrasadas = st.session_state.get("disc_busca_atrasadas", False)
 todas_disciplinas = _load_subjects(filtro_nome, filtro_atrasadas)
+
+# Carrega tarefas do usuario para calcular progresso e sinais por disciplina.
+def _load_all_tasks() -> list[dict]:
+    try:
+        return xano.tasks_list() or []
+    except xano.SessionExpired:
+        _handle_expiration()
+        return []
+    except xano.XanoError:
+        return []
+
+
+_all_tasks = _load_all_tasks()
+_tasks_by_subject = index_tasks_by_subject(_all_tasks)
+_today = _dt.date.today()
 
 # Split client-side ativas vs arquivadas pelo campo archived_at
 ativas = [s for s in todas_disciplinas if not s.get("archived_at")]
@@ -157,15 +180,41 @@ def _format_int(value) -> str:
 
 
 def _render_active_row(subject: dict) -> None:
+    tasks_da_disciplina = _tasks_by_subject.get(subject.get("id"), [])
+    prog = subject_progress(tasks_da_disciplina)
+    pct = float(prog.get("percentage") or 0.0)
+    n_atrasadas = sum(1 for t in tasks_da_disciplina if is_overdue(t, _today))
+    n_proximas = sum(
+        1 for t in tasks_da_disciplina if is_upcoming(t, _today) and not is_overdue(t, _today)
+    )
+
     with st.container(border=True):
-        col_nome, col_prof, col_carga, col_sem, col_ed, col_arq, col_del = st.columns(
-            [3, 3, 1, 1, 1, 1, 1]
-        )
+        (
+            col_nome,
+            col_prof,
+            col_carga,
+            col_sem,
+            col_prog,
+            col_sinais,
+            col_ed,
+            col_arq,
+            col_del,
+        ) = st.columns([3, 2, 1, 1, 2, 2, 1, 1, 1])
         col_nome.markdown(f"**{subject.get('name', '-')}**")
         col_nome.caption(subject.get("description") or "")
         col_prof.write(subject.get("professor") or "-")
         col_carga.write(_format_int(subject.get("workload_hours")) + "h")
         col_sem.write(_format_int(subject.get("semester")))
+
+        col_prog.write(f"{pct:.0f}%")
+        col_prog.progress(min(max(pct / 100.0, 0.0), 1.0))
+
+        sinais = []
+        if n_atrasadas > 0:
+            sinais.append(f"⚠️ {n_atrasadas} atrasada(s)")
+        if n_proximas > 0:
+            sinais.append(f"📅 {n_proximas} próxima(s)")
+        col_sinais.write("\n\n".join(sinais) if sinais else "")
 
         if col_ed.button(
             "✏️", key=f"edit_{subject['id']}", help="Editar", use_container_width=True
@@ -238,12 +287,14 @@ with tab_ativas:
     if not ativas:
         st.info("Nenhuma disciplina ativa com os filtros atuais.")
     else:
-        # Cabecalho de colunas
-        h1, h2, h3, h4, _, _, _ = st.columns([3, 3, 1, 1, 1, 1, 1])
+        # Cabecalho de colunas (alinhado a _render_active_row)
+        h1, h2, h3, h4, h5, h6, _, _, _ = st.columns([3, 2, 1, 1, 2, 2, 1, 1, 1])
         h1.caption("**Nome**")
         h2.caption("**Professor**")
         h3.caption("**Carga**")
         h4.caption("**Sem.**")
+        h5.caption("**Progresso**")
+        h6.caption("**Sinais**")
         for s in ativas:
             _render_active_row(s)
 

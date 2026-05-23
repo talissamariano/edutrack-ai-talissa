@@ -209,7 +209,7 @@
   {
     "id": 310189,
     "path": "functions/subjects/310159_unarchive_subject.xs",
-    "status": "unchanged",
+    "status": "changed",
     "type": "function",
     "staged": false,
     "sha256": "f768930b26584c7bdccb9e337a890dcb3aadd404c0b2f705fea45ce50d18115a",
