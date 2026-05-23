@@ -23,6 +23,7 @@ TOKEN_TTL_SECONDS = 86400  # alinhado a expiration do Xano (security.create_auth
 _SECRET_KEY_BY_GROUP = {
     "auth": "xano_auth_base_url",
     "subjects": "xano_subjects_base_url",
+    "academic_tasks": "xano_academic_tasks_base_url",
 }
 
 
@@ -275,6 +276,106 @@ def subjects_unarchive(subject_id: int) -> dict[str, Any]:
         group="subjects",
         auth=True,
         json={"id": subject_id},
+    )
+
+
+# ---------------------------------------------------------------------------
+# Academic Tasks (api_group "academic_tasks")
+# ---------------------------------------------------------------------------
+
+def tasks_list(
+    *,
+    subject_id: int | None = None,
+    status: str | None = None,
+    only_overdue: bool | None = None,
+) -> list[dict[str, Any]]:
+    """GET /academic_tasks -> lista as tarefas do usuario autenticado."""
+    params: dict[str, Any] = {}
+    if subject_id is not None:
+        params["subject_id"] = subject_id
+    if status:
+        params["status"] = status
+    if only_overdue:
+        params["only_overdue"] = "true"
+    return _request(
+        "GET", "/academic_tasks", group="academic_tasks", auth=True, params=params
+    ) or []
+
+
+def tasks_create(
+    title: str,
+    *,
+    subject_id: int,
+    status: str = "pending",
+    description: str | None = None,
+    due_date: str | None = None,
+) -> dict[str, Any]:
+    """POST /academic_tasks -> cria tarefa vinculada ao usuario autenticado.
+
+    due_date deve ser uma string ISO (YYYY-MM-DD) ou None.
+    """
+    payload: dict[str, Any] = {
+        "title": title,
+        "subject_id": subject_id,
+        "status": status,
+    }
+    if description:
+        payload["description"] = description
+    if due_date:
+        payload["due_date"] = due_date
+    return _request(
+        "POST", "/academic_tasks", group="academic_tasks", auth=True, json=payload
+    )
+
+
+def tasks_update(
+    task_id: int,
+    *,
+    title: str | None = None,
+    description: str | None = None,
+    due_date: str | None = None,
+    status: str | None = None,
+    subject_id: int | None = None,
+) -> dict[str, Any]:
+    """PATCH /academic_tasks/{id} -> atualiza a tarefa do proprio usuario."""
+    payload: dict[str, Any] = {}
+    if title is not None:
+        payload["title"] = title
+    if description is not None and description != "":
+        payload["description"] = description
+    if due_date is not None and due_date != "":
+        payload["due_date"] = due_date
+    if status is not None:
+        payload["status"] = status
+    if subject_id is not None:
+        payload["subject_id"] = subject_id
+    return _request(
+        "PATCH",
+        f"/academic_tasks/{task_id}",
+        group="academic_tasks",
+        auth=True,
+        json=payload,
+    )
+
+
+def tasks_delete(task_id: int) -> dict[str, Any]:
+    """DELETE /academic_tasks/{id} -> remove a tarefa do proprio usuario."""
+    return _request(
+        "DELETE",
+        f"/academic_tasks/{task_id}",
+        group="academic_tasks",
+        auth=True,
+    )
+
+
+def tasks_complete(task_id: int) -> dict[str, Any]:
+    """POST /academic_tasks/{id}/complete -> marca a tarefa como done."""
+    return _request(
+        "POST",
+        f"/academic_tasks/{task_id}/complete",
+        group="academic_tasks",
+        auth=True,
+        json={"id": task_id},
     )
 
 
