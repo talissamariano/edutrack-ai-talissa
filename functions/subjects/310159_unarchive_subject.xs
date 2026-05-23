@@ -30,7 +30,7 @@ function "subjects/unarchive_subject" {
       error = "Subject is not archived."
     }
   
-    // Update the subject record to set the archived_at to null
+    // Update the subject record to clear archived_at
     db.edit subjects {
       field_name = "id"
       field_value = $input.id
