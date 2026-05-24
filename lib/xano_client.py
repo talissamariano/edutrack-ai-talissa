@@ -288,8 +288,13 @@ def tasks_list(
     subject_id: int | None = None,
     status: str | None = None,
     only_overdue: bool | None = None,
+    priority: str | None = None,
 ) -> list[dict[str, Any]]:
-    """GET /academic_tasks -> lista as tarefas do usuario autenticado."""
+    """GET /academic_tasks -> lista as tarefas do usuario autenticado.
+
+    priority eh enviado como param para o backend (que pode ignora-lo);
+    o filtro final eh feito client-side em pages/2_Tarefas.py.
+    """
     params: dict[str, Any] = {}
     if subject_id is not None:
         params["subject_id"] = subject_id
@@ -297,6 +302,8 @@ def tasks_list(
         params["status"] = status
     if only_overdue:
         params["only_overdue"] = "true"
+    if priority:
+        params["priority"] = priority
     return _request(
         "GET", "/academic_tasks", group="academic_tasks", auth=True, params=params
     ) or []
@@ -309,10 +316,12 @@ def tasks_create(
     status: str = "pending",
     description: str | None = None,
     due_date: str | None = None,
+    priority: str | None = None,
 ) -> dict[str, Any]:
     """POST /academic_tasks -> cria tarefa vinculada ao usuario autenticado.
 
     due_date deve ser uma string ISO (YYYY-MM-DD) ou None.
+    priority: 'low' / 'medium' / 'high' (ou None).
     """
     payload: dict[str, Any] = {
         "title": title,
@@ -323,6 +332,8 @@ def tasks_create(
         payload["description"] = description
     if due_date:
         payload["due_date"] = due_date
+    if priority:
+        payload["priority"] = priority
     return _request(
         "POST", "/academic_tasks", group="academic_tasks", auth=True, json=payload
     )
@@ -335,6 +346,7 @@ def tasks_update(
     description: str | None = None,
     due_date: str | None = None,
     status: str | None = None,
+    priority: str | None = None,
     subject_id: int | None = None,
 ) -> dict[str, Any]:
     """PATCH /academic_tasks/{id} -> atualiza a tarefa do proprio usuario."""
@@ -347,6 +359,8 @@ def tasks_update(
         payload["due_date"] = due_date
     if status is not None:
         payload["status"] = status
+    if priority is not None:
+        payload["priority"] = priority
     if subject_id is not None:
         payload["subject_id"] = subject_id
     return _request(

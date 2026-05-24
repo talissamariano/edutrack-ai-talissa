@@ -16,6 +16,9 @@ function "academic_tasks/update_task" {
     // The new status (optional).
     text status?
   
+    // The new priority: low / medium / high (optional).
+    text priority?
+  
     // The new subject (optional; must be owned by the user when provided).
     int subject_id?
   }
@@ -67,6 +70,7 @@ function "academic_tasks/update_task" {
         updated_at : "now"
         title      : $input.title
         description: $input.description
+        priority   : $input.priority
         due_date   : $input.due_date
         status     : $input.status
         subject_id : $input.subject_id

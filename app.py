@@ -14,7 +14,7 @@ import streamlit as st
 
 from lib import xano_client as xano
 
-st.set_page_config(page_title="EduTrack AI", page_icon="🎓")
+st.set_page_config(page_title="EduTrack AI", page_icon="🎓", layout="wide")
 
 # Restaura a sessao a partir do cookie (persistencia entre reloads).
 xano.restore_session()

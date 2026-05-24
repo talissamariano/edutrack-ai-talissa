@@ -13,6 +13,9 @@ function "academic_tasks/create_task" {
     // The status of the task: pending / in_progress / done.
     text status
   
+    // The priority of the task: low / medium / high (optional).
+    text priority?
+  
     // The subject the task belongs to (must be owned by the user).
     int subject_id
   }
@@ -50,6 +53,7 @@ function "academic_tasks/create_task" {
         title      : $input.title
         description: $input.description
         due_date   : $input.due_date
+        priority   : $input.priority
         status     : $input.status
         subject_id : $input.subject_id
         user_id    : $auth.id

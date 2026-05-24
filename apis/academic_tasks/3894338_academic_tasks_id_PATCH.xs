@@ -19,6 +19,9 @@ query "academic_tasks/{id}" verb=PATCH {
     // The new status (optional).
     text status?
   
+    // The new priority: low / medium / high (optional).
+    text priority?
+  
     // The new subject (optional; must be owned by the user when provided).
     int subject_id?
   }
@@ -32,6 +35,7 @@ query "academic_tasks/{id}" verb=PATCH {
         description: $input.description
         due_date   : $input.due_date
         status     : $input.status
+        priority   : $input.priority
         subject_id : $input.subject_id
       }
     } as $updated_task
