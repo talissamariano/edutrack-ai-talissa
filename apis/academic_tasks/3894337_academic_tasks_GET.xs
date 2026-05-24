@@ -12,6 +12,9 @@ query academic_tasks verb=GET {
   
     // If true, return only tasks not done and with due_date in the past.
     bool only_overdue?
+  
+    // Filter by priority: low / medium / high (optional).
+    text priority?
   }
 
   stack {
@@ -21,6 +24,7 @@ query academic_tasks verb=GET {
         subject_id  : $input.subject_id
         status      : $input.status
         only_overdue: $input.only_overdue
+        priority    : $input.priority
       }
     } as $tasks
   }

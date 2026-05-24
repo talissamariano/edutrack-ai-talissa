@@ -11,6 +11,7 @@ table academic_tasks {
     text description
     date due_date
     text status
+    text priority?
     int subject_id {
       table = "subjects"
     }

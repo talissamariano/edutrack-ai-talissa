@@ -9,6 +9,9 @@ function "academic_tasks/list_tasks" {
   
     // If true, return only tasks not done and with due_date < now.
     bool only_overdue?
+  
+    // Filter by priority: low / medium / high (optional, applied client-side).
+    text priority?
   }
 
   stack {

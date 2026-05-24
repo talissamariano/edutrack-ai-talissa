@@ -30,6 +30,22 @@ STATUS_LABELS = {
 }
 STATUS_OPTIONS_CODE = ["pending", "in_progress", "done"]
 
+PRIORITY_LABELS = {
+    "low": "🟢 Baixa",
+    "medium": "🟡 Média",
+    "high": "🔴 Alta",
+}
+PRIORITY_OPTIONS_FORM = ["Baixa", "Média", "Alta"]
+PRIORITY_CODE_BY_LABEL = {"Baixa": "low", "Média": "medium", "Alta": "high"}
+PRIORITY_CODE_BY_FORM_INDEX = ["low", "medium", "high"]
+
+
+def _priority_badge(code: str | None) -> str:
+    """Retorna o badge (emoji + label) ou 'Sem prioridade' para None/vazio."""
+    if not code:
+        return "⚪ Sem prioridade"
+    return PRIORITY_LABELS.get(code, "⚪ Sem prioridade")
+
 
 def _handle_expiration() -> None:
     st.session_state["_session_expired_notice"] = True
@@ -102,7 +118,9 @@ def _load_tasks(status: str | None, only_overdue: bool) -> list[dict]:
 # -----------------------------------------------------------------------------
 
 with st.form("form_filtros_tarefas", clear_on_submit=False):
-    col_titulo, col_status, col_overdue, col_btn = st.columns([3, 2, 2, 1])
+    col_titulo, col_status, col_priority, col_overdue, col_btn = st.columns(
+        [3, 2, 2, 2, 1]
+    )
     with col_titulo:
         termo_titulo = st.text_input(
             "Buscar por título",
@@ -117,6 +135,14 @@ with st.form("form_filtros_tarefas", clear_on_submit=False):
                 st.session_state.get("task_filtro_status_label", "Todos")
             ),
         )
+    with col_priority:
+        priority_label = st.selectbox(
+            "Prioridade",
+            ["Todas", "Baixa", "Média", "Alta"],
+            index=["Todas", "Baixa", "Média", "Alta"].index(
+                st.session_state.get("task_filtro_priority_label", "Todas")
+            ),
+        )
     with col_overdue:
         only_overdue = st.checkbox(
             "Apenas atrasadas",
@@ -129,17 +155,20 @@ with st.form("form_filtros_tarefas", clear_on_submit=False):
 if aplicar:
     st.session_state["task_filtro_titulo"] = termo_titulo
     st.session_state["task_filtro_status_label"] = status_label
+    st.session_state["task_filtro_priority_label"] = priority_label
     st.session_state["task_filtro_overdue"] = only_overdue
 
 # Lê filtros persistidos
 filtro_titulo = st.session_state.get("task_filtro_titulo", "")
 filtro_status_label = st.session_state.get("task_filtro_status_label", "Todos")
+filtro_priority_label = st.session_state.get("task_filtro_priority_label", "Todas")
 filtro_overdue = st.session_state.get("task_filtro_overdue", False)
 status_code = {
     "Pendente": "pending",
     "Em andamento": "in_progress",
     "Concluída": "done",
 }.get(filtro_status_label)
+priority_code = PRIORITY_CODE_BY_LABEL.get(filtro_priority_label)
 
 subjects_map = _load_subjects_map()
 todas_tasks = _load_tasks(status_code, filtro_overdue)
@@ -148,6 +177,10 @@ todas_tasks = _load_tasks(status_code, filtro_overdue)
 if filtro_titulo:
     term = filtro_titulo.lower().strip()
     todas_tasks = [t for t in todas_tasks if term in (t.get("title") or "").lower()]
+
+# Filtro client-side por prioridade (backend ignora; aplica aqui)
+if priority_code:
+    todas_tasks = [t for t in todas_tasks if t.get("priority") == priority_code]
 
 # Split ativas (subject não arquivado) vs históricas (subject arquivado)
 def _subject_archived(task: dict) -> bool:
@@ -189,6 +222,17 @@ def _edit_dialog(task: dict, allow_subject_change: bool = True) -> None:
             "Concluída": "done",
         }[novo_status_label]
 
+        priority_atual = task.get("priority")
+        priority_idx = (
+            PRIORITY_CODE_BY_FORM_INDEX.index(priority_atual)
+            if priority_atual in PRIORITY_CODE_BY_FORM_INDEX
+            else 1  # default Média
+        )
+        nova_priority_label = st.selectbox(
+            "Prioridade", PRIORITY_OPTIONS_FORM, index=priority_idx
+        )
+        nova_priority = PRIORITY_CODE_BY_LABEL[nova_priority_label]
+
         novo_subject_id: int | None = None
         if allow_subject_change and active_subjects:
             opcoes = active_subjects
@@ -215,6 +259,7 @@ def _edit_dialog(task: dict, allow_subject_change: bool = True) -> None:
                 description=descricao,
                 due_date=prazo.isoformat() if prazo else None,
                 status=novo_status,
+                priority=nova_priority,
                 subject_id=novo_subject_id,
             )
             st.session_state["task_flash_success"] = (
@@ -273,9 +318,16 @@ def _render_task_row(
 ) -> None:
     overdue = _is_overdue(task)
     with st.container(border=True):
-        col_titulo, col_disc, col_prazo, col_status, col_done, col_ed, col_del = st.columns(
-            [5, 3, 2, 2, 1, 1, 1]
-        )
+        (
+            col_titulo,
+            col_disc,
+            col_prazo,
+            col_status,
+            col_priority,
+            col_done,
+            col_ed,
+            col_del,
+        ) = st.columns([5, 3, 2, 2, 2, 1, 1, 1])
 
         titulo = task.get("title") or "(sem título)"
         prefix = "⚠️ " if overdue else ""
@@ -296,6 +348,8 @@ def _render_task_row(
             col_prazo.write(prazo_txt)
 
         col_status.write(_status_label(task.get("status")))
+
+        col_priority.write(_priority_badge(task.get("priority")))
 
         if allow_complete and task.get("status") != "done":
             if col_done.button(
@@ -335,11 +389,12 @@ def _render_task_row(
 
 
 def _render_header_row(show_subject: bool = True) -> None:
-    h1, h2, h3, h4, _, _, _ = st.columns([5, 3, 2, 2, 1, 1, 1])
+    h1, h2, h3, h4, h5, _, _, _ = st.columns([5, 3, 2, 2, 2, 1, 1, 1])
     h1.caption("**Título**")
     h2.caption("**Disciplina**" if show_subject else "")
     h3.caption("**Prazo**")
     h4.caption("**Status**")
+    h5.caption("**Prioridade**")
 
 
 def _sort_by_due_date(tasks: list[dict]) -> list[dict]:
@@ -445,6 +500,9 @@ with tab_nova:
             status_label_novo = st.selectbox(
                 "Status", ["Pendente", "Em andamento", "Concluída"], index=0
             )
+            priority_label_novo = st.selectbox(
+                "Prioridade", PRIORITY_OPTIONS_FORM, index=1  # default Média
+            )
             criar = st.form_submit_button("Salvar", type="primary")
 
         if criar:
@@ -462,6 +520,7 @@ with tab_nova:
                             "Em andamento": "in_progress",
                             "Concluída": "done",
                         }[status_label_novo],
+                        priority=PRIORITY_CODE_BY_LABEL[priority_label_novo],
                     )
                     st.session_state["task_flash_success"] = (
                         f"Tarefa '{titulo}' cadastrada com sucesso."

@@ -18,6 +18,9 @@ query academic_tasks verb=POST {
   
     // The status: pending / in_progress / done.
     text status
+  
+    // The priority of the task: low / medium / high (optional).
+    text priority?
   }
 
   stack {
@@ -29,6 +32,7 @@ query academic_tasks verb=POST {
         description: $input.description
         due_date   : $input.due_date
         status     : $input.status
+        priority   : $input.priority
       }
     } as $new_task
   }
