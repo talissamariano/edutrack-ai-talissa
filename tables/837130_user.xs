@@ -21,6 +21,8 @@ table user {
         bool used?
       }
     }
+  
+    date birthday?
   }
 
   index = [

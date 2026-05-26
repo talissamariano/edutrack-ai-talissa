@@ -9,6 +9,9 @@ query "auth/profile" verb=PATCH {
   
     // The new email for the authenticated user.
     email email? filters=trim|lower
+  
+    // The user's birthday (optional).
+    date birthday?
   }
 
   stack {
@@ -43,7 +46,11 @@ query "auth/profile" verb=PATCH {
     db.edit user {
       field_name = "id"
       field_value = $auth.id
-      data = {name: $input.name, email: $input.email}
+      data = {
+        name    : $input.name
+        email   : $input.email
+        birthday: $input.birthday
+      }
     } as $updated_user
   
     // Create an event log for the profile update
