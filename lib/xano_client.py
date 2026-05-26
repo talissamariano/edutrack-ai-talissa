@@ -139,12 +139,24 @@ def me() -> dict[str, Any]:
     return _request("GET", "/auth/me", group="auth", auth=True)
 
 
-def update_profile(*, name: str | None = None, email: str | None = None) -> dict[str, Any]:
+def update_profile(
+    *,
+    name: str | None = None,
+    email: str | None = None,
+    birthday: str | None = None,
+) -> dict[str, Any]:
+    """PATCH /auth/profile -> atualiza nome, email e/ou aniversario.
+
+    birthday: string ISO 'YYYY-MM-DD' para gravar uma data, ou None para nao alterar.
+    Para limpar o aniversario, passar string vazia "".
+    """
     payload: dict[str, Any] = {}
     if name is not None:
         payload["name"] = name
     if email is not None:
         payload["email"] = email
+    if birthday is not None:
+        payload["birthday"] = birthday
     return _request("PATCH", "/auth/profile", group="auth", auth=True, json=payload)
 
 

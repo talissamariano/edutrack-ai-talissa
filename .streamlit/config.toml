@@ -1,0 +1,33 @@
+# Tema visual do EduTrack AI — paleta "Candy Pastel".
+# Componentes nativos do Streamlit (sem CSS injetado, alinhado as specs).
+
+[theme]
+# Base claro (segue tambem se o SO estiver em dark; este tema e otimizado para claro).
+base = "light"
+
+# --- Cores principais ---
+# Primaria: roxo lavanda candy (botoes, links, destaques, sliders).
+primaryColor = "#A78BFA"
+
+# Fundo principal da tela.
+backgroundColor = "#FAFBFF"
+
+# Fundo de elementos secundarios (sidebar, expanders, code blocks).
+secondaryBackgroundColor = "#F3EEFE"
+
+# Cor do texto.
+textColor = "#1F1B3D"
+
+# Cor das bordas (containers, inputs).
+borderColor = "#D8C5EE"
+
+# Cor dos links (mesma da primaria por padrao).
+linkColor = "#7C3AED"
+
+# --- Tipografia ---
+# Streamlit so aceita: "sans serif", "serif", "monospace".
+font = "sans serif"
+
+# --- Arredondamento (Streamlit 1.40+) ---
+# Cantos generosos pra dar a vibe "candy" sem CSS.
+baseRadius = "12px"

@@ -6,16 +6,21 @@
 
 from __future__ import annotations
 
+import calendar as _calendar
 import datetime as _dt
 
+import altair as alt
+import pandas as pd
 import streamlit as st
 
 from lib import xano_client as xano
 from lib.dashboard_utils import (
+    index_tasks_by_subject,
     is_overdue,
     subject_progress,
     upcoming_tasks,
 )
+from lib.quotes import quote_of_the_day
 
 st.title("🏠 Home")
 
@@ -47,6 +52,26 @@ def _load_tasks() -> list[dict]:
         return []
 
 
+def _load_profile() -> dict:
+    try:
+        return xano.me() or {}
+    except xano.SessionExpired:
+        _handle_expiration()
+        return {}
+    except xano.XanoError:
+        return {}
+
+
+def _parse_birthday(value) -> _dt.date | None:
+    if not value:
+        return None
+    text = str(value)[:10]
+    try:
+        return _dt.date.fromisoformat(text)
+    except ValueError:
+        return None
+
+
 def _format_date_br(value) -> str:
     if not value:
         return "-"
@@ -59,6 +84,43 @@ def _format_date_br(value) -> str:
 
 subjects = _load_subjects()
 tasks = _load_tasks()
+profile = _load_profile()
+
+# -----------------------------------------------------------------------------
+# Banner de aniversario (se hoje for o aniversario do usuario)
+# -----------------------------------------------------------------------------
+
+def _is_birthday_today(birthday: _dt.date, today: _dt.date) -> bool:
+    """Aniversario hoje? Trata 29/fev em anos nao-bissextos celebrando 28/fev e 1/mar."""
+    if (birthday.month, birthday.day) == (today.month, today.day):
+        return True
+    # 29/fev em ano nao-bissexto: celebra nos dois dias adjacentes.
+    if (
+        birthday.month == 2
+        and birthday.day == 29
+        and not _calendar.isleap(today.year)
+    ):
+        return (today.month, today.day) in ((2, 28), (3, 1))
+    return False
+
+
+birthday = _parse_birthday(profile.get("birthday"))
+hoje_now = _dt.date.today()
+if birthday and _is_birthday_today(birthday, hoje_now):
+    nome = profile.get("name") or "estudante"
+    st.success(f"🎉 Feliz aniversário, {nome}! Que seu dia seja incrível. 🎂")
+
+# -----------------------------------------------------------------------------
+# Post-it com a frase do dia
+# -----------------------------------------------------------------------------
+
+_quote = quote_of_the_day(hoje_now)
+_quote_text = _quote.get("text", "")
+_quote_author = _quote.get("author", "")
+if _quote_author:
+    st.info(f"💭 *{_quote_text}*  \n— **{_quote_author}**")
+else:
+    st.info(f"💭 *{_quote_text}*")
 
 # -----------------------------------------------------------------------------
 # Tela de boas-vindas (usuario novo, sem nenhuma disciplina)
@@ -109,6 +171,98 @@ st.caption(
     f"{progresso_geral.get('completed', 0)} concluída(s) de "
     f"{progresso_geral.get('total', 0)} tarefa(s)."
 )
+
+st.markdown("---")
+
+# -----------------------------------------------------------------------------
+# Progresso por disciplina (barras verticais)
+# -----------------------------------------------------------------------------
+
+st.subheader("📊 Progresso por disciplina")
+tasks_por_subject = index_tasks_by_subject(tasks)
+linhas_chart: list[dict] = []
+for s in ativas:
+    nome = s.get("name") or "(sem nome)"
+    tarefas_da_disc = tasks_por_subject.get(s["id"], [])
+    progresso = subject_progress(tarefas_da_disc)
+    pct = float(progresso.get("percentage") or 0.0)
+    linhas_chart.append({
+        "Disciplina": nome,
+        "Progresso": pct,
+        "Concluídas": progresso.get("completed", 0),
+        "Total": progresso.get("total", 0),
+    })
+
+if not linhas_chart:
+    st.info("Nenhuma disciplina ativa para exibir progresso.")
+else:
+    df_progress = pd.DataFrame(linhas_chart)
+    # Paleta candy pastel — uma cor por disciplina, em ciclo se passar de 8.
+    palette = [
+        "#A78BFA",  # lavender
+        "#F9C5D5",  # pink candy
+        "#A7E8DD",  # mint
+        "#7C3AED",  # purple
+        "#3B82F6",  # blue
+        "#EC4899",  # magenta
+        "#FCD34D",  # yellow soft
+        "#34D399",  # green soft
+    ]
+    bar = (
+        alt.Chart(df_progress)
+        .mark_bar(
+            cornerRadiusTopRight=6,
+            cornerRadiusBottomRight=6,
+            cornerRadiusTopLeft=6,
+            cornerRadiusBottomLeft=6,
+            size=10,
+        )
+        .encode(
+            y=alt.Y(
+                "Disciplina:N",
+                sort="-x",
+                title=None,
+                axis=alt.Axis(labelFontSize=13, labelPadding=10),
+            ),
+            x=alt.X(
+                "Progresso:Q",
+                title=None,
+                scale=alt.Scale(domain=[0, 100]),
+                axis=alt.Axis(format="d", values=[0, 25, 50, 75, 100], grid=True),
+            ),
+            color=alt.Color(
+                "Disciplina:N",
+                scale=alt.Scale(range=palette),
+                legend=None,
+            ),
+            tooltip=[
+                alt.Tooltip("Disciplina:N"),
+                alt.Tooltip("Progresso:Q", format=".1f", title="% concluído"),
+                alt.Tooltip("Concluídas:Q"),
+                alt.Tooltip("Total:Q"),
+            ],
+        )
+    )
+    # Texto com o % a direita de cada barra
+    text = (
+        alt.Chart(df_progress)
+        .transform_calculate(label="format(datum.Progresso, '.0f') + '%'")
+        .mark_text(
+            align="left",
+            baseline="middle",
+            dx=6,
+            fontSize=12,
+            fontWeight=600,
+            color="#1F1B3D",
+        )
+        .encode(
+            y=alt.Y("Disciplina:N", sort="-x"),
+            x=alt.X("Progresso:Q"),
+            text=alt.Text("label:N"),
+        )
+    )
+    chart = (bar + text).properties(height=max(120, 38 * len(linhas_chart)))
+    st.altair_chart(chart, use_container_width=True)
 
 st.markdown("---")
 
