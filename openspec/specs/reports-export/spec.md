@@ -22,7 +22,7 @@ O sistema SHALL expor uma página "Relatórios" no Streamlit (`pages/4_📊_Rela
 
 ### Requirement: Exportação de Tarefas
 
-O sistema SHALL permitir exportar a lista de tarefas do usuário autenticado em CSV e PDF, aplicando filtros opcionais por disciplina, status e prioridade. As colunas exportadas SHALL ser: título, disciplina, prazo (DD/MM/YYYY), status, prioridade, descrição.
+O sistema SHALL permitir exportar a lista de tarefas do usuário autenticado em CSV e PDF, aplicando filtros opcionais por disciplina, status, prioridade **e período (data inicial e/ou data final sobre `due_date`)**. As colunas exportadas SHALL ser: título, disciplina, prazo (DD/MM/YYYY), status, prioridade, descrição.
 
 #### Scenario: Exportar todas as tarefas em CSV
 
@@ -34,10 +34,15 @@ O sistema SHALL permitir exportar a lista de tarefas do usuário autenticado em 
 - **WHEN** o usuário aplica filtros (ex.: disciplina = "Cálculo I", status = "pending") e clica em "Baixar PDF"
 - **THEN** o PDF gerado contém apenas as tarefas que satisfazem os filtros, com cabeçalho indicando a data de geração
 
+#### Scenario: Exportar tarefas por período
+
+- **WHEN** o usuário ativa o filtro de período e define data inicial e/ou data final, depois clica em "Baixar CSV" ou "Baixar PDF"
+- **THEN** apenas tarefas com `due_date` dentro do intervalo são incluídas na exportação; tarefas sem `due_date` são excluídas quando o filtro está ativo
+
 #### Scenario: Sem tarefas no escopo
 
-- **WHEN** os filtros resultam em zero tarefas
-- **THEN** o sistema exibe uma mensagem "Nenhuma tarefa para exportar" e desabilita ou oculta os botões de download
+- **WHEN** os filtros (incluindo período) resultam em zero tarefas
+- **THEN** o sistema exibe uma mensagem "Nenhuma tarefa para exportar" e oculta os botões de download
 
 ### Requirement: Exportação de Disciplinas
 

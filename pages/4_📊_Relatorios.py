@@ -92,6 +92,23 @@ else:
     status_codes = {k for k, v in STATUS_LABELS.items() if v in status_sel}
     prio_codes = {k for k, v in PRIORITY_LABELS.items() if v in prio_sel}
 
+    filtrar_periodo = st.toggle("Filtrar por período", key="rel_periodo_toggle")
+    date_from: _dt.date | None = None
+    date_to: _dt.date | None = None
+    if filtrar_periodo:
+        cp1, cp2 = st.columns(2)
+        date_from = cp1.date_input("De", value=None, key="rel_date_from", format="DD/MM/YYYY")
+        date_to = cp2.date_input("Até", value=None, key="rel_date_to", format="DD/MM/YYYY")
+        st.caption("Tarefas sem prazo definido são excluídas quando o filtro está ativo.")
+
+    def _parse_date_rel(v) -> _dt.date | None:
+        if not v:
+            return None
+        try:
+            return _dt.date.fromisoformat(str(v)[:10])
+        except ValueError:
+            return None
+
     tasks_filt = tasks
     if disc_sel != "Todas":
         subj_id = next(
@@ -103,6 +120,17 @@ else:
         tasks_filt = [t for t in tasks_filt if t.get("status") in status_codes]
     if prio_codes:
         tasks_filt = [t for t in tasks_filt if t.get("priority") in prio_codes]
+    if filtrar_periodo:
+        def _in_range(t: dict) -> bool:
+            d = _parse_date_rel(t.get("due_date"))
+            if d is None:
+                return False
+            if date_from and d < date_from:
+                return False
+            if date_to and d > date_to:
+                return False
+            return True
+        tasks_filt = [t for t in tasks_filt if _in_range(t)]
 
     st.caption(f"{len(tasks_filt)} tarefa(s) no escopo atual.")
 
