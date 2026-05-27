@@ -36,6 +36,7 @@ if xano.is_authenticated():
         st.Page("pages/1_📚_Disciplinas.py", title="Disciplinas", icon="📚"),
         st.Page("pages/2_📝_Tarefas.py", title="Tarefas", icon="📝"),
         st.Page("pages/3_👤_Perfil.py", title="Perfil", icon="👤"),
+        st.Page("pages/4_📊_Relatorios.py", title="Relatórios", icon="📊"),
     ]
 else:
     pages = [st.Page("login.py", title="Entrar", icon="🔐", default=True)]
